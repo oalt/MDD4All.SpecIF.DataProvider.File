@@ -9,7 +9,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>Dr. Oliver Alt</Authors>
     <Company>MDD4All.de</Company>
-    <Description>SpecIF data procider for SpecIF files.</Description>
+    <Description>SpecIF data provider for SpecIF files.</Description>
     <Copyright>(c) MD4All.de</Copyright>
     <AssemblyName>MDD4All.SpecIF.DataProvider.File</AssemblyName>
     <RootNamespace>MDD4All.SpecIF.DataProvider.File</RootNamespace>
