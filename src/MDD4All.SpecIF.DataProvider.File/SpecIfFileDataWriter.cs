@@ -16,14 +16,15 @@ namespace MDD4All.SpecIF.DataProvider.File
 	{
 		private Dictionary<string, DataModels.SpecIF> _specIfData;
 
-		private string _identificatorFilePath = @"c:\specif\identificators.json";
-
+		private string _identificator = "identificators.json";
 		private string _path;
+		private string _identificatorFilePath = "";
 
 		public SpecIfFileDataWriter(string path, ISpecIfMetadataReader metadataReader, 
             ISpecIfDataReader dataReader) : base(metadataReader, dataReader)
 		{
 			_path = path;
+			_identificatorFilePath = _path + _identificator;
 			if (path == null)
 			{
 				_specIfData = new Dictionary<string, DataModels.SpecIF>();
@@ -43,6 +44,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 
 		public override void InitializeIdentificators()
 		{
+			
 			FileInfo fileInfo = new FileInfo(_identificatorFilePath);
 			if (fileInfo.Exists)
 			{
