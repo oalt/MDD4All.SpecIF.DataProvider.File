@@ -21,6 +21,8 @@ namespace MDD4All.SpecIF.DataProvider.File
             InitializeData();
         }
 
+        
+
         private void InitializeData()
         {
             SpecIfData = new Dictionary<string, DataModels.SpecIF>();
@@ -53,6 +55,46 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         }
 
+        public void RefreshData(string projectID = null)
+        {
+            if(projectID == null)
+            {
+                projectID = "PRJ-DEFAULT";
+            }
+
+
+            RefreshDataRecursively(_dataRootPath, projectID + ".specif");
+        }
+
+        private void RefreshDataRecursively(string currentPath, string filename)
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(currentPath);
+
+            
+            string fullName = directoryInfo.FullName + "/" + filename;
+
+            if (System.IO.File.Exists(fullName))
+            {
+                FileInfo specifFileInfo = new FileInfo(fullName);
+
+                DataModels.SpecIF specIF = SpecIfFileReaderWriter.ReadDataFromSpecIfFile(fullName);
+                if(SpecIfData.ContainsKey(specifFileInfo.FullName))
+                {
+                    SpecIfData[specifFileInfo.FullName] = specIF;
+                }
+                else
+                {
+                    SpecIfData.Add(specifFileInfo.FullName, specIF);
+                }
+            }
+            else
+            {
+                foreach (DirectoryInfo subDirectoryInfo in directoryInfo.GetDirectories())
+                {
+                    RefreshDataRecursively(subDirectoryInfo.FullName, filename);
+                }
+            }
+        }
 
         public override List<Node> GetAllHierarchies()
 		{
@@ -414,6 +456,7 @@ namespace MDD4All.SpecIF.DataProvider.File
             foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
             {
                 ProjectDescriptor projectDescriptor = new ProjectDescriptor(keyValuePair.Value);
+                result.Add(projectDescriptor);
             }
 
             return result;

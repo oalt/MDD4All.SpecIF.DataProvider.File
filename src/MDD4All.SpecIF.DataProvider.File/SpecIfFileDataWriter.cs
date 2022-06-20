@@ -12,153 +12,142 @@ using System.IO;
 
 namespace MDD4All.SpecIF.DataProvider.File
 {
-	public class SpecIfFileDataWriter : AbstractSpecIfDataWriter
-	{
-		private Dictionary<string, DataModels.SpecIF> _specIfData;
+    public class SpecIfFileDataWriter : AbstractSpecIfDataWriter
+    {
 
-		private string _identificator = "identificators.json";
-		private string _path;
-		private string _identificatorFilePath = "";
+        //private DataModels.SpecIF _specIfData;
 
-		public SpecIfFileDataWriter(string path, ISpecIfMetadataReader metadataReader, 
-            ISpecIfDataReader dataReader) : base(metadataReader, dataReader)
-		{
-			_path = path;
-			_identificatorFilePath = _path + _identificator;
-			if (path == null)
-			{
-				_specIfData = new Dictionary<string, DataModels.SpecIF>();
-			}
-			else
-			{
-                if(dataReader is SpecIfFileDataReader)
-                {
-                    SpecIfFileDataReader fileDataReader = dataReader as SpecIfFileDataReader;
-                    _specIfData = fileDataReader.SpecIfData;
-                }
-				
-			}
+        private string _path;
+        private string _identificatorFile = "identificators.json";
 
-			InitializeIdentificators();
-		}
+        private const string DEFAULT_PROJECT = "PRJ-DEFAULT";
 
-		public override void InitializeIdentificators()
-		{
-			
-			FileInfo fileInfo = new FileInfo(_identificatorFilePath);
-			if (fileInfo.Exists)
-			{
-				StreamReader file = new StreamReader(_identificatorFilePath);
+        public SpecIfFileDataWriter(string path,
+                                    ISpecIfMetadataReader metadataReader,
+                                    ISpecIfDataReader dataReader) : base(metadataReader, dataReader)
+        {
+            _path = path;
+            _dataReader = dataReader;
+            
+            InitializeIdentificators();
+        }
 
-				JsonSerializer serializer = new JsonSerializer();
+        private void RefreshData(string projectID = null)
+        {
+            if(_dataReader is SpecIfFileDataReader)
+            {
+                SpecIfFileDataReader specIfFileDataReader = _dataReader as SpecIfFileDataReader;
 
-				_identificators = (SpecIfIdentifiers)serializer.Deserialize(file, typeof(SpecIfIdentifiers));
+                specIfFileDataReader.RefreshData(projectID);
+            }
+        }
 
-				file.Close();
-			}
-			else
-			{
-				_identificators = new SpecIfIdentifiers();
-				SaveIdentificators();
-			}
-		}
+        public override void InitializeIdentificators()
+        {
+            FileInfo fileInfo = new FileInfo(_path + "/" + _identificatorFile);
+            if (fileInfo.Exists)
+            {
+                string json = System.IO.File.ReadAllText(fileInfo.FullName);
 
-		public override void SaveIdentificators()
-		{
-			StreamWriter sw = new StreamWriter(_identificatorFilePath);
-			JsonWriter writer = new JsonTextWriter(sw)
-			{
-				Formatting = Formatting.Indented
-			};
+                JsonConvert.DeserializeObject<SpecIfIdentifiers>(json);
+            }
+            else
+            {
+                _identificators = new SpecIfIdentifiers();
+                SaveIdentificators();
+            }
+        }
 
-			JsonSerializer serializer = new JsonSerializer()
-			{
-				NullValueHandling = NullValueHandling.Ignore
-			};
+        public override void SaveIdentificators()
+        {
+            string json = JsonConvert.SerializeObject(_identificators, Formatting.Indented);
 
-			serializer.Serialize(writer, _identificators);
-
-			writer.Flush();
-			writer.Close();
-		}
+            System.IO.File.WriteAllText(_path + "/" + _identificatorFile, json);
+        }
 
         public override void AddStatement(Statement statement)
-		{
-			//_specIfData?.Statements.Add(statement);
-			//SpecIfFileReaderWriter.SaveSpecIfToFile(_specIfData, _path);
-		}
+        {
+            DataModels.SpecIF specIfData = GetOrCreateProject();
+            specIfData.Statements.Add(statement);
+            SaveDataToFile(specIfData);
+            RefreshData();
+        }
 
         public override void AddResource(Resource resource)
-		{
-			//_specIfData?.Resources.Add(resource);
-			//SpecIfFileReaderWriter.SaveSpecIfToFile(_specIfData, _path);
-		}
+        {
+            DataModels.SpecIF specIfData = GetOrCreateProject();
+            specIfData.Resources.Add(resource);
+            SaveDataToFile(specIfData);
+            RefreshData();
+        }
 
         public override void AddNodeAsFirstChild(string parentNodeId, Node newNode)
-		{
-			throw new NotImplementedException();
-		}
+        {
+            throw new NotImplementedException();
+        }
 
         public override void AddHierarchy(Node hierarchy, string projectID = null)
-		{
-			//_specIfData?.Hierarchies.Add(hierarchy);
-			//SpecIfFileReaderWriter.SaveSpecIfToFile(_specIfData, _path);
-		}
+        {
+            DataModels.SpecIF specIfData = GetOrCreateProject(projectID);
+            specIfData.Hierarchies.Add(hierarchy);
+            SaveDataToFile(specIfData);
+            RefreshData(projectID);
+        }
 
-		public override Resource SaveResource(Resource resource, string projectID = null)
-		{
-			throw new NotImplementedException();
-		}
+        public override Resource SaveResource(Resource resource, string projectID = null)
+        {
+            throw new NotImplementedException();
+        }
 
-		public override Node UpdateHierarchy(Node hierarchy, string parentID = null, string predecessorID = null)
-		{
+        public override Node UpdateHierarchy(Node hierarchy, string parentID = null, string predecessorID = null)
+        {
             Node result = null;
 
-			//string id = hierarchy.ID;
+            //string id = hierarchy.ID;
 
-			//int index = -1;
-			//for (int counter = 0; counter < _specIfData.Hierarchies.Count; counter++)
-			//{
-			//	if (_specIfData?.Hierarchies[counter].ID == id)
-			//	{
-			//		index = counter;
-			//		break;
-			//	}
-			//}
+            //int index = -1;
+            //for (int counter = 0; counter < _specIfData.Hierarchies.Count; counter++)
+            //{
+            //	if (_specIfData?.Hierarchies[counter].ID == id)
+            //	{
+            //		index = counter;
+            //		break;
+            //	}
+            //}
 
-			//if (index != -1)
-			//{
-			//	_specIfData.Hierarchies[index] = hierarchy;
-			//	SpecIfFileReaderWriter.SaveSpecIfToFile(_specIfData, _path);
-			//}
-			//else
-			//{
-			//	// new hierarchy
-			//	_specIfData.Hierarchies.Add(hierarchy);
-			//	SpecIfFileReaderWriter.SaveSpecIfToFile(_specIfData, _path);
-			//}
+            //if (index != -1)
+            //{
+            //	_specIfData.Hierarchies[index] = hierarchy;
+            //	SpecIfFileReaderWriter.SaveSpecIfToFile(_specIfData, _path);
+            //}
+            //else
+            //{
+            //	// new hierarchy
+            //	_specIfData.Hierarchies.Add(hierarchy);
+            //	SpecIfFileReaderWriter.SaveSpecIfToFile(_specIfData, _path);
+            //}
 
             return result;
-		}
+        }
 
-		public override Statement SaveStatement(Statement statement, string projectID = null)
-		{
+        public override Statement SaveStatement(Statement statement, string projectID = null)
+        {
 
 
-			//Statement existingStatement = _specIfData?.Statements.Find(st => st.ID == statement.ID && st.Revision == statement.Revision);
+            //Statement existingStatement = _specIfData?.Statements.Find(st => st.ID == statement.ID && st.Revision == statement.Revision);
 
-			//if(existingStatement != null)
-			//{
-			//	existingStatement = statement;
-			//}
-			//else
-			//{
-			//	AddStatement(statement);
-			//}
-			//SpecIfFileReaderWriter.SaveSpecIfToFile(_specIfData, _path);
+            //if(existingStatement != null)
+            //{
+            //	existingStatement = statement;
+            //}
+            //else
+            //{
+            //	AddStatement(statement);
+            //}
+            //SpecIfFileReaderWriter.SaveSpecIfToFile(_specIfData, _path);
 
             return statement;
-		}
+        }
 
         protected override IdentifiableElement GetItemWithLatestRevisionInBranch<T>(string id, string branch)
         {
@@ -198,6 +187,45 @@ namespace MDD4All.SpecIF.DataProvider.File
         public override void DeleteNode(string nodeID)
         {
             throw new NotImplementedException();
+        }
+
+        private DataModels.SpecIF GetOrCreateProject(string projectID = null)
+        {
+            DataModels.SpecIF result = null;
+
+            string filename = "";
+            if(projectID == null)
+            {
+                filename = DEFAULT_PROJECT + ".specif";
+                projectID = DEFAULT_PROJECT;
+            }
+            else
+            {
+                filename = projectID + ".specif";
+            }
+
+            string fullName = _path + "/" + filename;
+
+            if(System.IO.File.Exists(fullName))
+            {
+                result = SpecIfFileReaderWriter.ReadDataFromSpecIfFile(fullName);
+            }
+            else
+            {
+                result = new DataModels.SpecIF
+                {
+                    ID = projectID
+                };
+            }
+
+            return result;
+        }
+
+        private void SaveDataToFile(DataModels.SpecIF specIF)
+        {
+            string fullName = _path + "/" + specIF.ID + ".specif";
+
+            SpecIfFileReaderWriter.SaveSpecIfToFile(specIF, fullName);
         }
     }
 }
