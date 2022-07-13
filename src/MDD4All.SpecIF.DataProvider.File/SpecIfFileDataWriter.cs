@@ -149,11 +149,6 @@ namespace MDD4All.SpecIF.DataProvider.File
             return statement;
         }
 
-        protected override IdentifiableElement GetItemWithLatestRevisionInBranch<T>(string id, string branch)
-        {
-            throw new NotImplementedException();
-        }
-
         public override void MoveNode(string nodeID, string newParentID, string newSiblingId)
         {
             throw new NotImplementedException();
