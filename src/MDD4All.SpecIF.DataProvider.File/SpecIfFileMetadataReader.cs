@@ -2,14 +2,14 @@
  * Copyright (c) MDD4All.de, Dr. Oliver Alt
  */
 using MDD4All.SpecIF.DataModels;
-using MDD4All.SpecIF.DataProvider.Contracts;
+using MDD4All.SpecIF.DataProvider.Base;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace MDD4All.SpecIF.DataProvider.File
 {
-	public class SpecIfFileMetadataReader : AbstractSpecIfMetadataReader
+    public class SpecIfFileMetadataReader : AbstractSpecIfMetadataReader
 	{
 
         private string _metadataRootPath = "";
@@ -73,7 +73,29 @@ namespace MDD4All.SpecIF.DataProvider.File
 
 		public override DataType GetDataTypeByKey(Key key)
 		{
-			return _metaData?.DataTypes.FirstOrDefault(dataType => dataType.ID == key.ID && dataType.Revision == key.Revision);
+			DataType result = null;
+
+			if (!string.IsNullOrEmpty(key.ID))
+			{
+				if (!string.IsNullOrEmpty(key.Revision))
+				{
+					result = _metaData.DataTypes.Find(dataType => dataType.ID == key.ID && dataType.Revision == key.Revision);
+				}
+				else
+				{
+					List<DataType> dataTypesWithSameID = _metaData?.DataTypes.FindAll(res => res.ID == key.ID);
+
+					if (dataTypesWithSameID.Any())
+					{
+						List<DataType> orderedByDateList = dataTypesWithSameID.OrderBy(x => x.ChangedAt).ToList();
+
+						result = orderedByDateList[0];
+					}
+
+				}
+			}
+
+			return result;
 		}
 
 		
@@ -81,15 +103,26 @@ namespace MDD4All.SpecIF.DataProvider.File
 		{
 			ResourceClass result = null;
 
-			List<ResourceClass> resourceClassesWithSameID = _metaData?.ResourceClasses.FindAll(res => res.ID == key.ID);
-
-			if (resourceClassesWithSameID.Count != 0)
+			if (!string.IsNullOrEmpty(key.ID))
 			{
-				
-				result = resourceClassesWithSameID.Find(r => r.Revision == key.Revision);
-				
-			}
+				if (!string.IsNullOrEmpty(key.Revision))
+				{
+					result = _metaData.ResourceClasses.Find(resourceClass => resourceClass.ID == key.ID && resourceClass.Revision == key.Revision);
+				}
+				else
+				{
+					List<ResourceClass> resourceClassesWithSameID = _metaData?.ResourceClasses.FindAll(res => res.ID == key.ID);
 
+					if (resourceClassesWithSameID.Any())
+					{
+						List<ResourceClass> orderedByDateList = resourceClassesWithSameID.OrderBy(x => x.ChangedAt).ToList();
+
+						result = orderedByDateList[0];
+					}
+					
+				}
+			}
+			
 			return result;
 		}
 
@@ -97,13 +130,24 @@ namespace MDD4All.SpecIF.DataProvider.File
 		{
 			PropertyClass result = null;
 
-			List<PropertyClass> propertyClassesWithSameID = _metaData?.PropertyClasses.FindAll(res => res.ID == key.ID);
-
-			if (propertyClassesWithSameID.Count != 0)
+			if (!string.IsNullOrEmpty(key.ID))
 			{
-				
-				result = propertyClassesWithSameID.Find(r => r.Revision == key.Revision);
-				
+				if (!string.IsNullOrEmpty(key.Revision))
+				{
+					result = _metaData.PropertyClasses.Find(propertyClass => propertyClass.ID == key.ID && propertyClass.Revision == key.Revision);
+				}
+				else
+				{
+					List<PropertyClass> propertyClassesWithSameID = _metaData?.PropertyClasses.FindAll(res => res.ID == key.ID);
+
+					if (propertyClassesWithSameID.Any())
+					{
+						List<PropertyClass> orderedByDateList = propertyClassesWithSameID.OrderBy(x => x.ChangedAt).ToList();
+
+						result = orderedByDateList[0];
+					}
+
+				}
 			}
 
 			return result;
@@ -118,13 +162,24 @@ namespace MDD4All.SpecIF.DataProvider.File
 		{
 			StatementClass result = null;
 
-			List<StatementClass> statementClassesWithSameID = _metaData?.StatementClasses.FindAll(res => res.ID == key.ID);
-
-			if (statementClassesWithSameID.Count != 0)
+			if (!string.IsNullOrEmpty(key.ID))
 			{
-				
-				result = statementClassesWithSameID.Find(r => r.Revision == key.Revision);
-				
+				if (!string.IsNullOrEmpty(key.Revision))
+				{
+					result = _metaData.StatementClasses.Find(statementClass => statementClass.ID == key.ID && statementClass.Revision == key.Revision);
+				}
+				else
+				{
+					List<StatementClass> statementClassesWithSameID = _metaData?.StatementClasses.FindAll(res => res.ID == key.ID);
+
+					if (statementClassesWithSameID.Any())
+					{
+						List<StatementClass> orderedByDateList = statementClassesWithSameID.OrderBy(x => x.ChangedAt).ToList();
+
+						result = orderedByDateList[0];
+					}
+
+				}
 			}
 
 			return result;

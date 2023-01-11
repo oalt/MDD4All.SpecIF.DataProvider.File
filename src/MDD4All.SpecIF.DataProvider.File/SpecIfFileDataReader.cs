@@ -2,10 +2,12 @@
  * Copyright (c) MDD4All.de, Dr. Oliver Alt
  */
 using MDD4All.SpecIF.DataModels;
+using MDD4All.SpecIF.DataProvider.Base;
 using MDD4All.SpecIF.DataProvider.Contracts;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MDD4All.SpecIF.DataProvider.File
 {
@@ -157,14 +159,33 @@ namespace MDD4All.SpecIF.DataProvider.File
 		{
 			Resource result = null;
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            if (!string.IsNullOrEmpty(key.ID))
             {
-               Resource resource = keyValuePair.Value?.Resources.Find(res => res.ID == key.ID && res.Revision == key.Revision);
-
-                if(resource != null)
+                foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
                 {
-                    result = resource;
-                    break;
+                    Resource resource = null;
+                    if (!string.IsNullOrEmpty(key.Revision))
+                    {
+                         resource = keyValuePair.Value?.Resources.Find(res => res.ID == key.ID && res.Revision == key.Revision);
+
+                        
+                    }
+                    else
+                    {
+                        List<Resource> allRevisions = keyValuePair.Value?.Resources.FindAll(element => element.ID == key.ID);
+
+                        if(allRevisions.Any())
+                        {
+                            List<Resource> orderedList = allRevisions.OrderBy(element => element.ChangedAt).ToList();
+                            resource = orderedList[0];
+                        }
+                    }
+
+                    if (resource != null)
+                    {
+                        result = resource;
+                        break;
+                    }
                 }
             }
 
@@ -265,8 +286,18 @@ namespace MDD4All.SpecIF.DataProvider.File
 
 		public override List<Statement> GetAllStatementsForResource(Key resourceKey)
 		{
-			throw new NotImplementedException();
-		}
+            List<Statement> result = new List<Statement>();
+
+            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            {
+                List<Statement> statements = keyValuePair.Value?.Statements.FindAll(stm => stm.StatementSubject.ID == resourceKey.ID || 
+                                                                                 stm.StatementObject.ID == resourceKey.ID);
+
+                result.AddRange(statements);
+            }
+
+            return result;
+        }
 
 		public override List<Node> GetContainingHierarchyRoots(Key resourceKey)
 		{
@@ -306,7 +337,14 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         public override List<Resource> GetAllResourceRevisions(string resourceID)
         {
-            throw new NotImplementedException();
+            List<Resource> result = new List<Resource>();
+
+            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            {
+                result.AddRange(keyValuePair.Value.Resources.FindAll(element => element.ID == resourceID));
+            }
+
+            return result;
         }
 
         public override List<Statement> GetAllStatements()
@@ -323,7 +361,14 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         public override List<Statement> GetAllStatementRevisions(string statementID)
         {
-            throw new NotImplementedException();
+            List<Statement> result = new List<Statement>();
+
+            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            {
+                result.AddRange(keyValuePair.Value.Statements.FindAll(stm => stm.ID == statementID));
+            }
+
+            return result;
         }
 
         public override List<Node> GetChildNodes(Key parentNodeKey)

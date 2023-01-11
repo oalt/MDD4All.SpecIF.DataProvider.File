@@ -2,12 +2,11 @@
  * Copyright (c) MDD4All.de, Dr. Oliver Alt
  */
 using MDD4All.SpecIF.DataModels;
-using MDD4All.SpecIF.DataModels.BaseTypes;
+using MDD4All.SpecIF.DataProvider.Base;
+using MDD4All.SpecIF.DataProvider.Base.DataModels;
 using MDD4All.SpecIF.DataProvider.Contracts;
-using MDD4All.SpecIF.DataProvider.Contracts.DataModels;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace MDD4All.SpecIF.DataProvider.File
