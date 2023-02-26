@@ -2,6 +2,7 @@
  * Copyright (c) MDD4All.de, Dr. Oliver Alt
  */
 using MDD4All.SpecIF.DataModels;
+using MDD4All.SpecIF.DataModels.Manipulation;
 using MDD4All.SpecIF.DataProvider.Base;
 using MDD4All.SpecIF.DataProvider.Base.DataModels;
 using MDD4All.SpecIF.DataProvider.Contracts;
@@ -82,7 +83,23 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         public override void AddNodeAsFirstChild(string parentNodeId, Node newNode)
         {
-            throw new NotImplementedException();
+            DataModels.SpecIF specIfData = GetOrCreateProject();
+
+            if (specIfData != null && specIfData.Hierarchies != null)
+            {
+                foreach (Node hieratchy in specIfData.Hierarchies)
+                {
+                    Node parentNode = hieratchy.GetNodeByID(parentNodeId);
+
+                    if (parentNode != null)
+                    {
+                        parentNode.Nodes.Insert(0, newNode);
+                        SaveDataToFile(specIfData);
+                        RefreshData();
+                        break;
+                    }
+                }
+            }
         }
 
         public override void AddHierarchy(Node hierarchy, string projectID = null)
@@ -150,7 +167,50 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         public override void MoveNode(string nodeID, string newParentID, string newSiblingId)
         {
-            throw new NotImplementedException();
+            DataModels.SpecIF specIfData = GetOrCreateProject();
+
+            if (specIfData != null && specIfData.Hierarchies != null)
+            {
+                foreach (Node hierarchy in specIfData.Hierarchies)
+                {
+                    Node nodeToMove = hierarchy.GetNodeByID(nodeID);
+
+                    if (nodeToMove != null)
+                    {
+                        Node oldParent = specIfData.GetParentNode(nodeID);
+
+                        Node newParentNode = hierarchy.GetNodeByID(newParentID);
+
+                        if(newParentNode != null && oldParent != null)
+                        {
+                            oldParent.Nodes.Remove(nodeToMove);
+
+                            int insertIndex = 0;
+                            int index = 0;
+
+                            if (!string.IsNullOrEmpty(newSiblingId))
+                            {
+                                foreach (Node node in newParentNode.Nodes)
+                                {
+                                    if (node.ID == newSiblingId)
+                                    {
+                                        insertIndex = index;
+                                        break;
+                                    }
+                                    index++;
+                                }
+                            }
+                            
+                            newParentNode.Nodes.Insert(insertIndex, nodeToMove);
+
+                            SaveDataToFile(specIfData);
+                            RefreshData();
+                            break;
+                        }
+                        
+                    }
+                }
+            }
         }
 
         public override Resource UpdateResource(Resource resource)
@@ -160,7 +220,32 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         public override void AddProject(ISpecIfMetadataWriter metadataWriter, DataModels.SpecIF project, string integrationID = null)
         {
-            throw new NotImplementedException();
+            string fullName = _path + "/" + project.ID + ".specif";
+
+            // only save the data if the file does not exist
+            if(!System.IO.File.Exists(fullName))
+            {
+                SaveDataToFile(project);
+            }
+            else // update the existing project data
+            {
+                DataModels.SpecIF existingProject = GetOrCreateProject(project.ID);
+
+                if (existingProject != null)
+                {
+                    existingProject.ID = project.ID;
+                    existingProject.Title = project.Title;
+                    existingProject.Description = project.Description;
+                    existingProject.Schema = project.Schema;
+                    existingProject.Generator = project.Generator;
+                    existingProject.GeneratorVersion = project.GeneratorVersion;
+                    existingProject.CreatedAt = DateTime.Now;
+                    existingProject.CreatedBy = project.CreatedBy;
+                    existingProject.Rights = project.Rights;
+
+                    SaveDataToFile(existingProject);
+                }
+            }
         }
 
         public override void UpdateProject(ISpecIfMetadataWriter metadataWriter, DataModels.SpecIF project)
@@ -175,12 +260,68 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         public override void AddNodeAsPredecessor(string predecessorID, Node newNode)
         {
-            throw new NotImplementedException();
+            DataModels.SpecIF specIfData = GetOrCreateProject();
+
+            if (specIfData != null && specIfData.Hierarchies != null)
+            {
+                foreach (Node hierarchy in specIfData.Hierarchies)
+                {
+                    Node predecessorNode = hierarchy.GetNodeByID(predecessorID);
+
+                    if (predecessorNode != null)
+                    {
+                        Node parentNode = specIfData.GetParentNode(predecessorID);
+
+
+                        if (parentNode != null)
+                        {
+                            int index = 0;
+
+
+                            foreach (Node node in parentNode.Nodes)
+                            {
+                                if (node.ID == predecessorID)
+                                {
+                                    break;
+                                }
+                                index++;
+                            }
+
+                            parentNode.Nodes.Insert(index + 1, newNode);
+
+                            SaveDataToFile(specIfData);
+                            RefreshData();
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         public override void DeleteNode(string nodeID)
         {
-            throw new NotImplementedException();
+            DataModels.SpecIF specIfData = GetOrCreateProject();
+
+            if (specIfData != null && specIfData.Hierarchies != null)
+            {
+                foreach (Node hierarchy in specIfData.Hierarchies)
+                {
+                    Node noteToDelete = hierarchy.GetNodeByID(nodeID);
+
+                    if(noteToDelete != null)
+                    {
+                        Node parentNode = specIfData.GetParentNode(nodeID);
+                        if(parentNode != null)
+                        {
+                            parentNode.Nodes.Remove(noteToDelete);
+                            SaveDataToFile(specIfData);
+                            RefreshData();
+                            break;
+                        }
+                    }
+                    
+                }
+            }
         }
 
         private DataModels.SpecIF GetOrCreateProject(string projectID = null)

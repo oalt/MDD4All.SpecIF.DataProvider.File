@@ -2,6 +2,7 @@
  * Copyright (c) MDD4All.de, Dr. Oliver Alt
  */
 using MDD4All.SpecIF.DataModels;
+using MDD4All.SpecIF.DataModels.Manipulation;
 using MDD4All.SpecIF.DataProvider.Base;
 using MDD4All.SpecIF.DataProvider.Contracts;
 using System;
@@ -381,8 +382,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 
                 foreach(Node hierarchy in specif.Hierarchies)
                 {
-                    Node parentNode = null;
-                    FindNodeRecusrsively(hierarchy, parentNodeKey, ref parentNode);
+                    Node parentNode = hierarchy.GetNodeByID(parentNodeKey.ID);
 
                     if(parentNode != null)
                     {
@@ -405,8 +405,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 
                 foreach (Node hierarchy in specif.Hierarchies)
                 {
-                    Node parentNode = null;
-                    FindNodeRecusrsively(hierarchy, key, ref parentNode);
+                    Node parentNode = hierarchy.GetNodeByID(key.ID);
 
                     if (parentNode != null)
                     {
@@ -427,55 +426,52 @@ namespace MDD4All.SpecIF.DataProvider.File
             {
                 DataModels.SpecIF specif = keyValuePair.Value;
 
-                foreach (Node hierarchy in specif.Hierarchies)
+                Node node = specif.GetParentNode(childNode.ID);
+                if(node != null)
                 {
-
-                    FindParentNodeRecusrsively(hierarchy, childNode, ref result);
-                    if(result != null)
-                    {
-                        break;
-                    }
+                    result = node;
+                    break;
                 }
             }
 
             return result;
         }
 
-        private void FindNodeRecusrsively(Node currentNode, Key key, ref Node result)
-        {
-            if(currentNode.ID == key.ID && currentNode.Revision == key.Revision)
-            {
-                result = currentNode;
-            }
-            else
-            {
-                foreach(Node childNode in currentNode.Nodes)
-                {
-                    FindNodeRecusrsively(childNode, key, ref result);
-                }
-            }
-        }
+        //private void FindNodeRecusrsively(Node currentNode, Key key, ref Node result)
+        //{
+        //    if(currentNode.ID == key.ID && currentNode.Revision == key.Revision)
+        //    {
+        //        result = currentNode;
+        //    }
+        //    else
+        //    {
+        //        foreach(Node childNode in currentNode.Nodes)
+        //        {
+        //            FindNodeRecusrsively(childNode, key, ref result);
+        //        }
+        //    }
+        //}
 
-        private void FindParentNodeRecusrsively(Node currentNode, Key key, ref Node result)
-        {
-            foreach (Node childNode in currentNode.Nodes)
-            {
-                if (childNode.ID == key.ID && childNode.Revision == key.Revision)
-                {
-                    result = currentNode;
-                    break;
-                }
-            }
+        //private void FindParentNodeRecusrsively(Node currentNode, Key key, ref Node result)
+        //{
+        //    foreach (Node childNode in currentNode.Nodes)
+        //    {
+        //        if (childNode.ID == key.ID && childNode.Revision == key.Revision)
+        //        {
+        //            result = currentNode;
+        //            break;
+        //        }
+        //    }
             
-            if(result == null)
-            {
-                foreach (Node childNode in currentNode.Nodes)
-                {
-                    FindParentNodeRecusrsively(childNode, key, ref result);
-                }
-            }
+        //    if(result == null)
+        //    {
+        //        foreach (Node childNode in currentNode.Nodes)
+        //        {
+        //            FindParentNodeRecusrsively(childNode, key, ref result);
+        //        }
+        //    }
             
-        }
+        //}
 
         public override DataModels.SpecIF GetProject(ISpecIfMetadataReader metadataReader, string projectID,
             List<Key> hierarchyFilter = null, bool includeMetadata = true)
