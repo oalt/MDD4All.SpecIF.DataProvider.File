@@ -103,7 +103,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 		{
 			ResourceClass result = null;
 
-			if (!string.IsNullOrEmpty(key.ID))
+			if (key != null && !string.IsNullOrEmpty(key.ID))
 			{
 				if (!string.IsNullOrEmpty(key.Revision))
 				{
@@ -228,6 +228,11 @@ namespace MDD4All.SpecIF.DataProvider.File
         public override List<StatementClass> GetAllStatementClassRevisions(string statementClassID)
         {
             throw new System.NotImplementedException();
+        }
+
+        public override void NotifyMetadataChanged()
+        {
+            InitializeMetadata();
         }
     }
 }
