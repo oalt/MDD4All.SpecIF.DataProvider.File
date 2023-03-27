@@ -1,0 +1,1 @@
+﻿Data provider to provide SpecIF data using (JSON-)files.

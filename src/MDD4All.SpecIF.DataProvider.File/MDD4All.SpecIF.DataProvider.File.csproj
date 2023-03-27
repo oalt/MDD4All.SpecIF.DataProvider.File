@@ -11,10 +11,19 @@
     <Company>MDD4All.de</Company>
     <Description>SpecIF data procider for SpecIF files.</Description>
     <Copyright>(c) MD4All.de</Copyright>
+    <PackageReadmeFile>Nuget.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MDD4All.SpecIF.DataProvider.Contracts" Version="3.1.0.12" />
+    <PackageReference Include="MDD4All.SpecIF.DataModels.Manipulation" Version="3.0.0.31" />
+    <PackageReference Include="MDD4All.SpecIF.DataProvider.Base" Version="2.0.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Nuget.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
