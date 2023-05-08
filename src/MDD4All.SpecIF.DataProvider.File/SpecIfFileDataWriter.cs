@@ -8,6 +8,7 @@ using MDD4All.SpecIF.DataProvider.Base.DataModels;
 using MDD4All.SpecIF.DataProvider.Contracts;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace MDD4All.SpecIF.DataProvider.File
@@ -115,33 +116,29 @@ namespace MDD4All.SpecIF.DataProvider.File
             throw new NotImplementedException();
         }
 
-        public override Node UpdateHierarchy(Node hierarchy, string parentID = null, string predecessorID = null)
+        public override Node UpdateHierarchy(Node hierarchyToUpdate, string parentID = null, string predecessorID = null)
         {
-            Node result = null;
+            Node result = hierarchyToUpdate;
 
-            //string id = hierarchy.ID;
+            if (parentID != null ^ predecessorID != null)
+            {
+                throw new NotImplementedException();
+            }
 
-            //int index = -1;
-            //for (int counter = 0; counter < _specIfData.Hierarchies.Count; counter++)
-            //{
-            //	if (_specIfData?.Hierarchies[counter].ID == id)
-            //	{
-            //		index = counter;
-            //		break;
-            //	}
-            //}
+            DataModels.SpecIF specIfData = GetOrCreateProject();
 
-            //if (index != -1)
-            //{
-            //	_specIfData.Hierarchies[index] = hierarchy;
-            //	SpecIfFileReaderWriter.SaveSpecIfToFile(_specIfData, _path);
-            //}
-            //else
-            //{
-            //	// new hierarchy
-            //	_specIfData.Hierarchies.Add(hierarchy);
-            //	SpecIfFileReaderWriter.SaveSpecIfToFile(_specIfData, _path);
-            //}
+            foreach(Node hierarchy in specIfData.Hierarchies)
+            {
+                Node nodeToUpdate = hierarchy.GetNodeByID(hierarchyToUpdate.ID);
+                if (nodeToUpdate != null)
+                {
+                    nodeToUpdate.ResourceReference = hierarchyToUpdate.ResourceReference;
+                    nodeToUpdate.Nodes = hierarchyToUpdate.Nodes;
+                    SaveDataToFile(specIfData);
+                    RefreshData();
+                    break;
+                }
+            }          
 
             return result;
         }
@@ -194,7 +191,7 @@ namespace MDD4All.SpecIF.DataProvider.File
                                 {
                                     if (node.ID == newSiblingId)
                                     {
-                                        insertIndex = index;
+                                        insertIndex = index + 1;
                                         break;
                                     }
                                     index++;
