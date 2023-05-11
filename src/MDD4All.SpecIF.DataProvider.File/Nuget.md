@@ -2,6 +2,9 @@
 
 ## Changes
 
+### 3.0.2
+* Nuget updates after fixes in dependent modules
+
 ### 3.0.1
 * Fixing bugs in handling resource reference updates and hierarchy structure changes
 

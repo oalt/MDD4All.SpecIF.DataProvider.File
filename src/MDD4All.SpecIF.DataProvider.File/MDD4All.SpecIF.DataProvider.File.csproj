@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MDD4All.SpecIF.DataModels.Manipulation" Version="3.0.0.31" />
+    <PackageReference Include="MDD4All.SpecIF.DataModels.Manipulation" Version="3.0.1.34" />
     <PackageReference Include="MDD4All.SpecIF.DataProvider.Base" Version="2.0.0.2" />
   </ItemGroup>
 
