@@ -95,22 +95,98 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         public override void UpdateDataType(DataType dataType)
         {
-            throw new NotImplementedException();
+            int index = -1;
+            for(int counter=0; counter < _metadata.DataTypes.Count; counter++)
+            {
+                DataType existingDataType = _metadata.DataTypes[counter];
+                if(existingDataType.ID == dataType.ID && existingDataType.Revision == dataType.Revision)
+                {
+                    index = counter;
+                    break;
+                }
+            }
+
+            if(index != -1)
+            {
+                _metadata.DataTypes[index] = dataType;
+            }
+            else
+            {
+                _metadata.DataTypes.Add(dataType);
+            }
+            SpecIfFileReaderWriter.SaveSpecIfToFile(_metadata, _metadataFilePath);
         }
 
         public override void UpdatePropertyClass(PropertyClass propertyClass)
         {
-            throw new NotImplementedException();
+            int index = -1;
+            for (int counter = 0; counter < _metadata.PropertyClasses.Count; counter++)
+            {
+                PropertyClass existingClass = _metadata.PropertyClasses[counter];
+                if (existingClass.ID == propertyClass.ID && existingClass.Revision == propertyClass.Revision)
+                {
+                    index = counter;
+                    break;
+                }
+            }
+
+            if (index != -1)
+            {
+                _metadata.PropertyClasses[index] = propertyClass;
+            }
+            else
+            {
+                _metadata.PropertyClasses.Add(propertyClass);
+            }
+            SpecIfFileReaderWriter.SaveSpecIfToFile(_metadata, _metadataFilePath);
         }
 
         public override void UpdateResourceClass(ResourceClass resourceClass)
         {
-            throw new NotImplementedException();
+            int index = -1;
+            for (int counter = 0; counter < _metadata.ResourceClasses.Count; counter++)
+            {
+                ResourceClass existingClass = _metadata.ResourceClasses[counter];
+                if (existingClass.ID == resourceClass.ID && existingClass.Revision == resourceClass.Revision)
+                {
+                    index = counter;
+                    break;
+                }
+            }
+
+            if (index != -1)
+            {
+                _metadata.ResourceClasses[index] = resourceClass;
+            }
+            else
+            {
+                _metadata.ResourceClasses.Add(resourceClass);
+            }
+            SpecIfFileReaderWriter.SaveSpecIfToFile(_metadata, _metadataFilePath);
         }
 
         public override void UpdateStatementClass(StatementClass statementClass)
         {
-            throw new NotImplementedException();
+            int index = -1;
+            for (int counter = 0; counter < _metadata.StatementClasses.Count; counter++)
+            {
+                ResourceClass existingClass = _metadata.StatementClasses[counter];
+                if (existingClass.ID == statementClass.ID && existingClass.Revision == statementClass.Revision)
+                {
+                    index = counter;
+                    break;
+                }
+            }
+
+            if (index != -1)
+            {
+                _metadata.StatementClasses[index] = statementClass;
+            }
+            else
+            {
+                _metadata.StatementClasses.Add(statementClass);
+            }
+            SpecIfFileReaderWriter.SaveSpecIfToFile(_metadata, _metadataFilePath);
         }
     }
 }
