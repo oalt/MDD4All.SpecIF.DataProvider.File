@@ -13,7 +13,7 @@ using System.IO;
 
 namespace MDD4All.SpecIF.DataProvider.File
 {
-    public class SpecIfFileDataWriter : AbstractSpecIfDataWriter
+    public class SpecIfFileDataWriter<T> : AbstractSpecIfDataWriter where T : ExtendedSpecIF, new()
     {
 
         //private DataModels.SpecIF _specIfData;
@@ -35,9 +35,9 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         private void RefreshData(string projectID = null)
         {
-            if(_dataReader is SpecIfFileDataReader)
+            if(_dataReader is SpecIfFileDataReader<T>)
             {
-                SpecIfFileDataReader specIfFileDataReader = _dataReader as SpecIfFileDataReader;
+                SpecIfFileDataReader<T> specIfFileDataReader = _dataReader as SpecIfFileDataReader<T>;
 
                 specIfFileDataReader.RefreshData(projectID);
             }
@@ -321,9 +321,9 @@ namespace MDD4All.SpecIF.DataProvider.File
             }
         }
 
-        private DataModels.SpecIF GetOrCreateProject(string projectID = null)
+        private T GetOrCreateProject(string projectID = null)
         {
-            DataModels.SpecIF result = null;
+            T result = default(T);
 
             string filename = "";
             if(projectID == null)
@@ -340,11 +340,11 @@ namespace MDD4All.SpecIF.DataProvider.File
 
             if(System.IO.File.Exists(fullName))
             {
-                result = SpecIfFileReaderWriter.ReadDataFromSpecIfFile(fullName);
+                result = SpecIfFileReaderWriter.ReadDataFromSpecIfFile<T>(fullName);
             }
             else
             {
-                result = new DataModels.SpecIF
+                result = new T
                 {
                     ID = projectID
                 };

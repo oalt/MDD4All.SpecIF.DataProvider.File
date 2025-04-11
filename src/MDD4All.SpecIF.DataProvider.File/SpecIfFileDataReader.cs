@@ -12,11 +12,11 @@ using System.Linq;
 
 namespace MDD4All.SpecIF.DataProvider.File
 {
-	public class SpecIfFileDataReader : AbstractSpecIfDataReader
+    public class SpecIfFileDataReader<T> : AbstractSpecIfDataReader where T : ExtendedSpecIF
 	{
         private string _dataRootPath;
 
-		public Dictionary<string, DataModels.SpecIF> SpecIfData;
+		public Dictionary<string, T> SpecIfData;
 
         public SpecIfFileDataReader(string dataRootPath)
         {
@@ -28,7 +28,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         private void InitializeData()
         {
-            SpecIfData = new Dictionary<string, DataModels.SpecIF>();
+            SpecIfData = new Dictionary<string, T>();
 
             InitializeDataRecusrsively(_dataRootPath);
         }
@@ -40,7 +40,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 
             foreach (FileInfo fileInfo in specifFiles)
             {
-                DataModels.SpecIF currentSepcIF = SpecIfFileReaderWriter.ReadDataFromSpecIfFile(fileInfo.FullName);
+                T currentSepcIF = SpecIfFileReaderWriter.ReadDataFromSpecIfFile<T>(fileInfo.FullName);
 
                 if(!SpecIfData.ContainsKey(fileInfo.FullName))
                 {
@@ -80,7 +80,7 @@ namespace MDD4All.SpecIF.DataProvider.File
             {
                 FileInfo specifFileInfo = new FileInfo(fullName);
 
-                DataModels.SpecIF specIF = SpecIfFileReaderWriter.ReadDataFromSpecIfFile(fullName);
+                T specIF = SpecIfFileReaderWriter.ReadDataFromSpecIfFile<T>(fullName);
                 if(SpecIfData.ContainsKey(specifFileInfo.FullName))
                 {
                     SpecIfData[specifFileInfo.FullName] = specIF;
@@ -103,7 +103,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 		{
 			List<Node> result = new List<Node>();
 
-            foreach(KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach(KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 List<Node> allHierarchiyNodes = keyValuePair.Value?.Hierarchies;
 
@@ -133,7 +133,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 		{
 			Node result = null;
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 List<Node> hierarchiesWithSameID = keyValuePair.Value?.Hierarchies.FindAll(res => res.ID == key.ID);
 
@@ -162,7 +162,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 
             if (!string.IsNullOrEmpty(key.ID))
             {
-                foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+                foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
                 {
                     Resource resource = null;
                     if (!string.IsNullOrEmpty(key.Revision))
@@ -219,7 +219,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 		{
 			Statement result = null;
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 Statement statement = keyValuePair.Value?.Statements.Find(res => res.ID == key.ID && res.Revision == key.Revision);
 
@@ -289,7 +289,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 		{
             List<Statement> result = new List<Statement>();
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 List<Statement> statements = keyValuePair.Value?.Statements.FindAll(stm => stm.StatementSubject.ID == resourceKey.ID || 
                                                                                  stm.StatementObject.ID == resourceKey.ID);
@@ -309,7 +309,7 @@ namespace MDD4All.SpecIF.DataProvider.File
         {
             List<Node> result = new List<Node>();
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 DataModels.SpecIF specIF = keyValuePair.Value;
 
@@ -340,7 +340,7 @@ namespace MDD4All.SpecIF.DataProvider.File
         {
             List<Resource> result = new List<Resource>();
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 result.AddRange(keyValuePair.Value.Resources.FindAll(element => element.ID == resourceID));
             }
@@ -352,7 +352,7 @@ namespace MDD4All.SpecIF.DataProvider.File
         {
             List<Statement> result = new List<Statement>();
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 result.AddRange(keyValuePair.Value.Statements);
             }
@@ -364,7 +364,7 @@ namespace MDD4All.SpecIF.DataProvider.File
         {
             List<Statement> result = new List<Statement>();
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 result.AddRange(keyValuePair.Value.Statements.FindAll(stm => stm.ID == statementID));
             }
@@ -376,7 +376,7 @@ namespace MDD4All.SpecIF.DataProvider.File
         {
             List<Node> result = new List<Node>();
 
-            foreach(KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach(KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 DataModels.SpecIF specif = keyValuePair.Value;
 
@@ -399,7 +399,7 @@ namespace MDD4All.SpecIF.DataProvider.File
         {
             Node result = null;
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 DataModels.SpecIF specif = keyValuePair.Value;
 
@@ -422,7 +422,7 @@ namespace MDD4All.SpecIF.DataProvider.File
         {
             Node result = null;
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 DataModels.SpecIF specif = keyValuePair.Value;
 
@@ -478,7 +478,7 @@ namespace MDD4All.SpecIF.DataProvider.File
         {
             DataModels.SpecIF result = null;
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 if (keyValuePair.Value.ID == projectID)
                 {
@@ -494,7 +494,7 @@ namespace MDD4All.SpecIF.DataProvider.File
         {
             List<ProjectDescriptor> result = new List<ProjectDescriptor>();
 
-            foreach (KeyValuePair<string, DataModels.SpecIF> keyValuePair in SpecIfData)
+            foreach (KeyValuePair<string, T> keyValuePair in SpecIfData)
             {
                 ProjectDescriptor projectDescriptor = new ProjectDescriptor(keyValuePair.Value);
                 result.Add(projectDescriptor);

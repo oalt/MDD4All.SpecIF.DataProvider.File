@@ -2,6 +2,7 @@
  * Copyright (c) MDD4All.de, Dr. Oliver Alt
  */
 using MDD4All.SpecIF.DataModels;
+using MDD4All.SpecIF.DataModels.DiagramMetadata;
 using MDD4All.SpecIF.DataProvider.Base;
 using System.Collections.Generic;
 using System.IO;
@@ -9,19 +10,19 @@ using System.Linq;
 
 namespace MDD4All.SpecIF.DataProvider.File
 {
-    public class SpecIfFileMetadataReader : AbstractSpecIfMetadataReader
+    public class SpecIfFileMetadataReader<T> : AbstractSpecIfMetadataReader where T : ExtendedSpecIF, new()
 	{
 
         private string _metadataRootPath = "";
 
-		private DataModels.SpecIF _metaData;
+		private T _metaData;
 
 		public SpecIfFileMetadataReader()
 		{
-			_metaData = SpecIfFileReaderWriter.ReadDataFromSpecIfFile(@"c:\specif\metadata.specif");
+			_metaData = SpecIfFileReaderWriter.ReadDataFromSpecIfFile<T>(@"c:\specif\metadata.specif");
 		}
 
-        public SpecIfFileMetadataReader(DataModels.SpecIF metaData)
+        public SpecIfFileMetadataReader(T metaData)
         {
             _metaData = metaData;
         }
@@ -34,7 +35,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         private void InitializeMetadata()
         {
-            _metaData = new DataModels.SpecIF();
+            _metaData = new T();
 
             InitializeMetadataRecusrsively(_metadataRootPath);
         }
@@ -46,7 +47,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 
             foreach(FileInfo fileInfo in specifFiles)
             {
-                DataModels.SpecIF currentSepcIF = SpecIfFileReaderWriter.ReadDataFromSpecIfFile(fileInfo.FullName);
+                T currentSepcIF = SpecIfFileReaderWriter.ReadDataFromSpecIfFile<T>(fileInfo.FullName);
 
                 _metaData.DataTypes.AddRange(currentSepcIF.DataTypes);
 
@@ -55,6 +56,8 @@ namespace MDD4All.SpecIF.DataProvider.File
                 _metaData.ResourceClasses.AddRange(currentSepcIF.ResourceClasses);
 
                 _metaData.StatementClasses.AddRange(currentSepcIF.StatementClasses);
+
+				_metaData.DiagramObjectClasses.AddRange(currentSepcIF.DiagramObjectClasses);
             }
 
             foreach (DirectoryInfo subDirectoryInfo in directoryInfo.GetDirectories())
@@ -233,6 +236,43 @@ namespace MDD4All.SpecIF.DataProvider.File
         public override void NotifyMetadataChanged()
         {
             InitializeMetadata();
+        }
+
+        public override List<DiagramObjectClass> GetAllDiagramObjectClasses()
+        {
+            return _metaData?.DiagramObjectClasses;
+        }
+
+        public override DiagramObjectClass GetDiagramObjectClassByKey(Key key)
+        {
+            DiagramObjectClass result = null;
+
+            if (!string.IsNullOrEmpty(key.ID))
+            {
+                if (!string.IsNullOrEmpty(key.Revision))
+                {
+                    result = _metaData.DiagramObjectClasses.Find(diagramObjectClass => diagramObjectClass.ID == key.ID && diagramObjectClass.Revision == key.Revision);
+                }
+                else
+                {
+                    List<DiagramObjectClass> diagramObjectClassesWithSameID = _metaData?.DiagramObjectClasses.FindAll(res => res.ID == key.ID);
+
+                    if (diagramObjectClassesWithSameID.Any())
+                    {
+                        List<DiagramObjectClass> orderedByDateList = diagramObjectClassesWithSameID.OrderBy(x => x.ChangedAt).ToList();
+
+                        result = orderedByDateList[0];
+                    }
+
+                }
+            }
+
+            return result;
+        }
+
+        public override List<DiagramObjectClass> GetAllDiagramObjectClassesRevisions(string classID)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -1,17 +1,15 @@
 ﻿using MDD4All.SpecIF.DataModels;
 using MDD4All.SpecIF.DataProvider.Base;
-using MDD4All.SpecIF.DataProvider.Contracts;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using Newtonsoft.Json;
+using MDD4All.SpecIF.DataModels.DiagramMetadata;
 
 namespace MDD4All.SpecIF.DataProvider.File
 {
     public class SpecIfFileMetadataWriter : AbstractSpecIfMetadataWriter
     {
-        private DataModels.SpecIF _metadata;
+        private ExtendedSpecIF _metadata;
 
         private string _metadataRootPath = "";
 
@@ -45,7 +43,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 
                 };
 
-                DataModels.SpecIF specif = new DataModels.SpecIF();
+                ExtendedSpecIF specif = new ExtendedSpecIF();
 
                 specif.ID = project.ID;
                 specif.Title = project.Title;
@@ -64,7 +62,7 @@ namespace MDD4All.SpecIF.DataProvider.File
             else
             {
                 string json = System.IO.File.ReadAllText(_metadataFilePath);
-                _metadata = JsonConvert.DeserializeObject<DataModels.SpecIF>(json);
+                _metadata = JsonConvert.DeserializeObject<ExtendedSpecIF>(json);
             }
 
         }
@@ -185,6 +183,36 @@ namespace MDD4All.SpecIF.DataProvider.File
             else
             {
                 _metadata.StatementClasses.Add(statementClass);
+            }
+            SpecIfFileReaderWriter.SaveSpecIfToFile(_metadata, _metadataFilePath);
+        }
+
+        public override void AddDiagramObjectClass(DiagramObjectClass diagramObjectClass)
+        {
+            _metadata.DiagramObjectClasses.Add(diagramObjectClass);
+            SpecIfFileReaderWriter.SaveSpecIfToFile(_metadata, _metadataFilePath);
+        }
+
+        public override void UpdateDiagramObjectClass(DiagramObjectClass diagramObjectClass)
+        {
+            int index = -1;
+            for (int counter = 0; counter < _metadata.DiagramObjectClasses.Count; counter++)
+            {
+                DiagramObjectClass existingClass = _metadata.DiagramObjectClasses[counter];
+                if (existingClass.ID == diagramObjectClass.ID && existingClass.Revision == diagramObjectClass.Revision)
+                {
+                    index = counter;
+                    break;
+                }
+            }
+
+            if (index != -1)
+            {
+                _metadata.DiagramObjectClasses[index] = diagramObjectClass;
+            }
+            else
+            {
+                _metadata.DiagramObjectClasses.Add(diagramObjectClass);
             }
             SpecIfFileReaderWriter.SaveSpecIfToFile(_metadata, _metadataFilePath);
         }

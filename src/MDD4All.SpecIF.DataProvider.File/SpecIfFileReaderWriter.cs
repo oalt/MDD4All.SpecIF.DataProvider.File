@@ -11,9 +11,9 @@ namespace MDD4All.SpecIF.DataProvider.File
 {
 	public class SpecIfFileReaderWriter
 	{
-		public static DataModels.SpecIF ReadDataFromSpecIfFile(string path)
+		public static T ReadDataFromSpecIfFile<T>(string path)
 		{
-			DataModels.SpecIF result = null;
+			T result = default(T);
 
 			StreamReader file = null;
 
@@ -24,7 +24,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 
 				JsonSerializer serializer = new JsonSerializer();
 
-				result = (DataModels.SpecIF)serializer.Deserialize(file, typeof(DataModels.SpecIF));
+				result = (T)serializer.Deserialize(file, typeof(T));
 			}
 			catch(Exception exception)
 			{
@@ -43,7 +43,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 			return result;
 		}
 
-		public static void SaveSpecIfToFile(DataModels.SpecIF data, string path)
+		public static void SaveSpecIfToFile<T>(T data, string path)
 		{
 			StreamWriter sw = new StreamWriter(path);
 			JsonWriter writer = new JsonTextWriter(sw)
@@ -53,7 +53,10 @@ namespace MDD4All.SpecIF.DataProvider.File
 
 			JsonSerializer serializer = new JsonSerializer()
 			{
-				NullValueHandling = NullValueHandling.Ignore
+				NullValueHandling = NullValueHandling.Ignore,
+				//TypeNameHandling = TypeNameHandling.All,
+				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+
 			};
 
 			serializer.Serialize(writer, data);
