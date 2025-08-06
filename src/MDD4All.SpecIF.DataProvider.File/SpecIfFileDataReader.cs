@@ -5,8 +5,11 @@ using MDD4All.SpecIF.DataModels;
 using MDD4All.SpecIF.DataModels.Manipulation;
 using MDD4All.SpecIF.DataProvider.Base;
 using MDD4All.SpecIF.DataProvider.Contracts;
+using MongoDB.Bson.Serialization.Serializers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 
@@ -501,6 +504,31 @@ namespace MDD4All.SpecIF.DataProvider.File
             }
 
             return result;
+        }
+        public override string GetProjectIDFromNodeID(string nodeID)
+        {
+            string projectID = "PRJ-DEFAULT";
+            List<string> ProjectIDList = new List<string>();
+            foreach(ProjectDescriptor descriptor in GetProjectDescriptions())
+            {
+                ProjectIDList.Add(descriptor.ID);
+            }
+            foreach(string ProjectID in  ProjectIDList)
+            {
+                bool nodeHasBeenFound = false;
+                List<Node> NodeList = GetAllHierarchyRootNodes(ProjectID);
+                foreach (Node node in NodeList)
+                {
+                    if(node.ID == nodeID)
+                    {
+                        return ProjectID;
+                        nodeHasBeenFound = true;
+                        break;
+                    }
+                }
+                if (nodeHasBeenFound) break;
+            }
+            return projectID;
         }
     }
 }

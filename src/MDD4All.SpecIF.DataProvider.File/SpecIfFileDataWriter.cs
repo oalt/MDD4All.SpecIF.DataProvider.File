@@ -220,7 +220,7 @@ namespace MDD4All.SpecIF.DataProvider.File
             string fullName = _path + "/" + project.ID + ".specif";
 
             // only save the data if the file does not exist
-            if(!System.IO.File.Exists(fullName))
+            if (!System.IO.File.Exists(fullName))
             {
                 SaveDataToFile(project);
             }
@@ -243,6 +243,7 @@ namespace MDD4All.SpecIF.DataProvider.File
                     SaveDataToFile(existingProject);
                 }
             }
+            RefreshData(project.ID);
         }
 
         public override void UpdateProject(ISpecIfMetadataWriter metadataWriter, DataModels.SpecIF project)
@@ -295,12 +296,14 @@ namespace MDD4All.SpecIF.DataProvider.File
             }
         }
 
-        public override void DeleteNode(string nodeID)
+        public override void DeleteNode(string nodeID, string projectID)
         {
-            DataModels.SpecIF specIfData = GetOrCreateProject();
+            DataModels.SpecIF specIfData = GetOrCreateProject(projectID);
 
             if (specIfData != null && specIfData.Hierarchies != null)
             {
+                bool shallDeleteHierarchy = false;
+                Node hierarchyToDelete = null;
                 foreach (Node hierarchy in specIfData.Hierarchies)
                 {
                     Node noteToDelete = hierarchy.GetNodeByID(nodeID);
@@ -312,11 +315,22 @@ namespace MDD4All.SpecIF.DataProvider.File
                         {
                             parentNode.Nodes.Remove(noteToDelete);
                             SaveDataToFile(specIfData);
-                            RefreshData();
+                            RefreshData(projectID);
+                            break;
+                        }
+                        else
+                        {
+                            shallDeleteHierarchy = true;
+                            hierarchyToDelete = hierarchy;
                             break;
                         }
                     }
-                    
+                }
+                if(shallDeleteHierarchy)
+                {
+                    specIfData.Hierarchies.Remove(hierarchyToDelete);
+                    SaveDataToFile(specIfData);
+                    RefreshData(projectID);
                 }
             }
         }
