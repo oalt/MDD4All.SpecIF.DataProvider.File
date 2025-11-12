@@ -23,6 +23,8 @@ namespace MDD4All.SpecIF.DataProvider.File
 
         private const string DEFAULT_PROJECT = "PRJ-DEFAULT";
 
+        private SpecIfFileDataReader<T> _specIfFileDataReader;
+
         public SpecIfFileDataWriter(string path,
                                     ISpecIfMetadataReader metadataReader,
                                     ISpecIfDataReader dataReader) : base(metadataReader, dataReader)
@@ -30,6 +32,11 @@ namespace MDD4All.SpecIF.DataProvider.File
             _path = path;
             _dataReader = dataReader;
             
+            if(_dataReader is SpecIfFileDataReader<T>)
+            {
+                _specIfFileDataReader = (SpecIfFileDataReader<T>)_dataReader;
+            }
+
             InitializeIdentificators();
         }
 
@@ -66,25 +73,25 @@ namespace MDD4All.SpecIF.DataProvider.File
             System.IO.File.WriteAllText(_path + "/" + _identificatorFile, json);
         }
 
-        public override void AddStatement(Statement statement)
+        public override void AddStatement(Statement statement, string projectID = null)
         {
-            DataModels.SpecIF specIfData = GetOrCreateProject();
+            DataModels.SpecIF specIfData = GetOrCreateProject(projectID);
             specIfData.Statements.Add(statement);
             SaveDataToFile(specIfData);
             RefreshData();
         }
 
-        public override void AddResource(Resource resource)
+        public override void AddResource(Resource resource, string projectID = null)
         {
-            DataModels.SpecIF specIfData = GetOrCreateProject();
+            DataModels.SpecIF specIfData = GetOrCreateProject(projectID);
             specIfData.Resources.Add(resource);
             SaveDataToFile(specIfData);
-            RefreshData();
+            //RefreshData();
         }
 
-        public override void AddNodeAsFirstChild(string parentNodeId, Node newNode)
+        public override void AddNodeAsFirstChild(string parentNodeId, Node newNode, string projectID = null)
         {
-            DataModels.SpecIF specIfData = GetOrCreateProject();
+            DataModels.SpecIF specIfData = GetOrCreateProject(projectID);
 
             if (specIfData != null && specIfData.Hierarchies != null)
             {
@@ -108,7 +115,7 @@ namespace MDD4All.SpecIF.DataProvider.File
             DataModels.SpecIF specIfData = GetOrCreateProject(projectID);
             specIfData.Hierarchies.Add(hierarchy);
             SaveDataToFile(specIfData);
-            RefreshData(projectID);
+            //RefreshData(projectID);
         }
 
         public override Resource SaveResource(Resource resource, string projectID = null)
@@ -116,7 +123,7 @@ namespace MDD4All.SpecIF.DataProvider.File
             throw new NotImplementedException();
         }
 
-        public override Node UpdateHierarchy(Node hierarchyToUpdate, string parentID = null, string predecessorID = null)
+        public override Node UpdateHierarchy(Node hierarchyToUpdate, string parentID = null, string predecessorID = null, string projectID = null)
         {
             Node result = hierarchyToUpdate;
 
@@ -125,7 +132,7 @@ namespace MDD4All.SpecIF.DataProvider.File
                 throw new NotImplementedException();
             }
 
-            DataModels.SpecIF specIfData = GetOrCreateProject();
+            DataModels.SpecIF specIfData = GetOrCreateProject(projectID);
 
             foreach(Node hierarchy in specIfData.Hierarchies)
             {
@@ -135,7 +142,7 @@ namespace MDD4All.SpecIF.DataProvider.File
                     nodeToUpdate.ResourceReference = hierarchyToUpdate.ResourceReference;
                     nodeToUpdate.Nodes = hierarchyToUpdate.Nodes;
                     SaveDataToFile(specIfData);
-                    RefreshData();
+                    //RefreshData();
                     break;
                 }
             }          
@@ -162,9 +169,9 @@ namespace MDD4All.SpecIF.DataProvider.File
             return statement;
         }
 
-        public override void MoveNode(string nodeID, string newParentID, string newSiblingId)
+        public override void MoveNode(string nodeID, string newParentID, string newSiblingId, string projectID = null)
         {
-            DataModels.SpecIF specIfData = GetOrCreateProject();
+            DataModels.SpecIF specIfData = GetOrCreateProject(projectID);
 
             if (specIfData != null && specIfData.Hierarchies != null)
             {
@@ -201,7 +208,7 @@ namespace MDD4All.SpecIF.DataProvider.File
                             newParentNode.Nodes.Insert(insertIndex, nodeToMove);
 
                             SaveDataToFile(specIfData);
-                            RefreshData();
+                            //RefreshData();
                             break;
                         }
                         
@@ -210,7 +217,7 @@ namespace MDD4All.SpecIF.DataProvider.File
             }
         }
 
-        public override Resource UpdateResource(Resource resource)
+        public override Resource UpdateResource(Resource resource, string projectID = null)
         {
             throw new NotImplementedException();
         }
@@ -223,32 +230,32 @@ namespace MDD4All.SpecIF.DataProvider.File
             if (!System.IO.File.Exists(fullName))
             {
                 SaveDataToFile(project);
+                RefreshData(project.ID);
             }
-            else // update the existing project data
-            {
-                DataModels.SpecIF existingProject = GetOrCreateProject(project.ID);
-
-                if (existingProject != null)
-                {
-                    existingProject.ID = project.ID;
-                    existingProject.Title = project.Title;
-                    existingProject.Description = project.Description;
-                    existingProject.Schema = project.Schema;
-                    existingProject.Generator = project.Generator;
-                    existingProject.GeneratorVersion = project.GeneratorVersion;
-                    existingProject.CreatedAt = DateTime.Now;
-                    existingProject.CreatedBy = project.CreatedBy;
-                    existingProject.Rights = project.Rights;
-
-                    SaveDataToFile(existingProject);
-                }
-            }
-            RefreshData(project.ID);
+            
+            
         }
 
         public override void UpdateProject(ISpecIfMetadataWriter metadataWriter, DataModels.SpecIF project)
         {
-            throw new NotImplementedException();
+            DataModels.SpecIF existingProject = GetOrCreateProject(project.ID);
+
+            if (existingProject != null)
+            {
+                existingProject.ID = project.ID;
+                existingProject.Title = project.Title;
+                existingProject.Description = project.Description;
+                existingProject.Schema = project.Schema;
+                existingProject.Generator = project.Generator;
+                existingProject.GeneratorVersion = project.GeneratorVersion;
+                existingProject.CreatedAt = DateTime.Now;
+                existingProject.CreatedBy = project.CreatedBy;
+                existingProject.Rights = project.Rights;
+
+                SaveDataToFile(existingProject);
+
+                RefreshData(project.ID);
+            }
         }
 
         public override void DeleteProject(string projectID)
@@ -256,9 +263,9 @@ namespace MDD4All.SpecIF.DataProvider.File
             throw new NotImplementedException();
         }
 
-        public override void AddNodeAsPredecessor(string predecessorID, Node newNode)
+        public override void AddNodeAsPredecessor(string predecessorID, Node newNode, string projectID = null)
         {
-            DataModels.SpecIF specIfData = GetOrCreateProject();
+            DataModels.SpecIF specIfData = GetOrCreateProject(projectID);
 
             if (specIfData != null && specIfData.Hierarchies != null)
             {
@@ -288,7 +295,7 @@ namespace MDD4All.SpecIF.DataProvider.File
                             parentNode.Nodes.Insert(index + 1, newNode);
 
                             SaveDataToFile(specIfData);
-                            RefreshData();
+                            //RefreshData();
                             break;
                         }
                     }
@@ -330,38 +337,55 @@ namespace MDD4All.SpecIF.DataProvider.File
                 {
                     specIfData.Hierarchies.Remove(hierarchyToDelete);
                     SaveDataToFile(specIfData);
-                    RefreshData(projectID);
+                    //RefreshData(projectID);
                 }
             }
         }
+
+        
 
         private T GetOrCreateProject(string projectID = null)
         {
             T result = default(T);
 
             string filename = "";
-            if(projectID == null)
+            if(projectID == null) // get the default project
             {
-                filename = DEFAULT_PROJECT + ".specif";
-                projectID = DEFAULT_PROJECT;
+                filename = SpecIfDataProviderConstants.DEFAULT_PROJECT_ID + ".specif";
+                projectID = SpecIfDataProviderConstants.DEFAULT_PROJECT_ID;
             }
             else
             {
                 filename = projectID + ".specif";
             }
 
-            string fullName = _path + "/" + filename;
+            string fullName = _path + filename;
 
-            if(System.IO.File.Exists(fullName))
+            if (_specIfFileDataReader != null && _specIfFileDataReader.SpecIfData.ContainsKey(fullName))
             {
-                result = SpecIfFileReaderWriter.ReadDataFromSpecIfFile<T>(fullName);
+                result = _specIfFileDataReader.SpecIfData[fullName];
             }
             else
             {
-                result = new T
+                T specifData;
+                if (System.IO.File.Exists(fullName))
                 {
-                    ID = projectID
-                };
+                    specifData = SpecIfFileReaderWriter.ReadDataFromSpecIfFile<T>(fullName);
+                }
+                else
+                {
+                    specifData = new T
+                    {
+                        ID = projectID
+                    };
+                }
+
+                if (_specIfFileDataReader != null)
+                {
+                    _specIfFileDataReader.SpecIfData.Add(fullName, specifData);
+                }
+
+                result = specifData;
             }
 
             return result;

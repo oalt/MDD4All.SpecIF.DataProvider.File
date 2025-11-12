@@ -65,7 +65,7 @@ namespace MDD4All.SpecIF.DataProvider.File
         {
             if(projectID == null)
             {
-                projectID = "PRJ-DEFAULT";
+                projectID = SpecIfDataProviderConstants.DEFAULT_PROJECT_ID;
             }
 
 
@@ -132,7 +132,7 @@ namespace MDD4All.SpecIF.DataProvider.File
 			return result;
 		}
 
-		public override Node GetHierarchyByKey(Key key)
+		public override Node GetHierarchyByKey(Key key, string projectID = null)
 		{
 			Node result = null;
 
